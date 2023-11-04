@@ -1,13 +1,26 @@
 package com.wafflestudio.seminar.spring2023.playlist.service
 
+import com.wafflestudio.seminar.spring2023.playlist.repository.PlaylistRepository
+import com.wafflestudio.seminar.spring2023.playlist.repository.PlaylistViewEntity
+import com.wafflestudio.seminar.spring2023.playlist.repository.PlaylistViewRepository
 import com.wafflestudio.seminar.spring2023.playlist.service.SortPlaylist.Type
+import jakarta.transaction.Transactional
+import org.springframework.orm.ObjectOptimisticLockingFailureException
 import org.springframework.stereotype.Service
+import org.springframework.transaction.PlatformTransactionManager
+import org.springframework.transaction.support.TransactionTemplate
 import java.time.LocalDateTime
+import java.time.Duration
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.Future
+import java.util.concurrent.Executors
 
 @Service
-class PlaylistViewServiceImpl : PlaylistViewService, SortPlaylist {
+class PlaylistViewServiceImpl (
+        private val playlistViewRepository: PlaylistViewRepository,
+        private val playlistRepository: PlaylistRepository,
+        private val txManager: PlatformTransactionManager,
+) : PlaylistViewService, SortPlaylist {
 
     /**
      * 스펙:
@@ -22,14 +35,38 @@ class PlaylistViewServiceImpl : PlaylistViewService, SortPlaylist {
      *  3. create 함수가 실패해도, 플레이리스트 조회 API 응답은 성공해야 한다.
      *  4. Future가 리턴 타입인 이유를 고민해보며 구현하기.
      */
+
+    private val threads = Executors.newFixedThreadPool(4)
+
     override fun create(playlistId: Long, userId: Long, at: LocalDateTime): Future<Boolean> {
-        return CompletableFuture.completedFuture(false) // FIXME
+        return threads.submit<Boolean> {
+            val playlistViewEntity = playlistViewRepository.findByPlaylistIdAndUserId(playlistId = playlistId, userId = userId)
+            if ( playlistViewEntity != null ) {
+                if (Duration.between(playlistViewEntity.createdAt, at).toMinutes() < 1) {
+                    false
+                } else {
+                    TransactionTemplate(txManager).executeWithoutResult {
+                        playlistRepository.updateViewCnt(playlistId)
+                    }
+                    true
+                }
+            } else {
+                TransactionTemplate(txManager).executeWithoutResult {
+                    playlistViewRepository.save(PlaylistViewEntity(playlistId = playlistId, userId = userId, createdAt = at))
+                    playlistRepository.updateViewCnt(playlistId)
+                }
+                true
+            }
+        }
     }
 
     override fun invoke(playlists: List<PlaylistBrief>, type: Type, at: LocalDateTime): List<PlaylistBrief> {
         return when (type) {
             Type.DEFAULT -> playlists
-            else -> TODO("Not yet implemented")
+            Type.HOT -> playlists.sortedByDescending {
+                playlistViewRepository.findAllByPlaylistId(it.id)!!
+                        .filter { playlistViewEntity -> Duration.between(playlistViewEntity.createdAt, at).toHours() < 1 }.size }
+            Type.VIEW -> playlists.sortedByDescending { playlistRepository.findById(it.id).get().viewCnt }
         }
     }
 }
