@@ -9,10 +9,10 @@ import jakarta.persistence.OneToMany
 
 @Entity(name = "artists")
 class ArtistEntity(
-    @Id
+        @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     val id: Long = 0L,
-    val name: String,
-    @OneToMany(mappedBy = "artist", cascade = [CascadeType.ALL])
+        var name: String,
+        @OneToMany(mappedBy = "artist", cascade = [CascadeType.ALL])
     val albums: MutableList<AlbumEntity> = mutableListOf(),
 )

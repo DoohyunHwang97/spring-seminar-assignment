@@ -21,4 +21,6 @@ interface SongRepository : JpaRepository<SongEntity, Long> {
         WHERE s.id IN :ids
     """)
     fun findAllByIdWithJoinFetch(ids: List<Long>): List<SongEntity>
+
+    fun findAllByTitle(title: String): List<SongEntity>?
 }

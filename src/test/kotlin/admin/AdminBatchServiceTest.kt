@@ -16,11 +16,11 @@ import org.springframework.transaction.support.TransactionTemplate
 
 @SpringBootTest
 class AdminBatchServiceTest @Autowired constructor(
-    @Value("classpath:albums.txt") private val albumFile: Resource,
-    private val adminBatchService: AdminBatchService,
-    private val albumRepository: AlbumRepository,
-    private val objectMapper: ObjectMapper,
-    private val txManager: PlatformTransactionManager,
+        @Value("classpath:albums.txt") private val albumFile: Resource,
+        private val adminBatchService: AdminBatchService,
+        private val albumRepository: AlbumRepository,
+        private val objectMapper: ObjectMapper,
+        private val txManager: PlatformTransactionManager,
 ) {
 
     @Test
