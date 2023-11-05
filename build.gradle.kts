@@ -30,7 +30,7 @@ dependencies {
     runtimeOnly("com.h2database:h2")
     implementation("com.github.ben-manes.caffeine:caffeine:3.0.3")
     implementation("org.springframework.boot:spring-boot-starter-web")
-    implementation("com.github.maricn:logback-slack-appender:1.4.0")
+    implementation("com.googlecode.json-simple:json-simple:1.1.1")
 }
 
 tasks.withType<KotlinCompile> {
