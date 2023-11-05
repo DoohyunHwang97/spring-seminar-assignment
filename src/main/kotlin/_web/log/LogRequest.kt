@@ -16,7 +16,7 @@ class LogRequestImpl : LogRequest {
     private val logger = LoggerFactory.getLogger(javaClass)
 
     override operator fun invoke(request: Request) {
-        TODO()
+        logger.info("[API-REQUEST] {} {}", request.method, request.path)
     }
 }
 

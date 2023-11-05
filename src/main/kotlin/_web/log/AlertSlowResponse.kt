@@ -1,8 +1,13 @@
 package com.wafflestudio.seminar.spring2023._web.log
 
 import org.slf4j.LoggerFactory
+import org.springframework.http.HttpHeaders
 import org.springframework.stereotype.Component
+import org.springframework.web.client.RestTemplate
+import java.net.URI
+import java.util.concurrent.Executors
 import java.util.concurrent.Future
+
 
 interface AlertSlowResponse {
     operator fun invoke(slowResponse: SlowResponse): Future<Boolean>
@@ -29,8 +34,26 @@ data class SlowResponse(
 @Component
 class AlertSlowResponseImpl : AlertSlowResponse {
     private val logger = LoggerFactory.getLogger(javaClass)
+    private val threads = Executors.newFixedThreadPool(4)
+    private val restTemplate = RestTemplate()
+    private val httpHeaders = HttpHeaders()
+
 
     override operator fun invoke(slowResponse: SlowResponse): Future<Boolean> {
-        TODO()
+        return threads.submit<Boolean> {
+            val logInfo = "[API-RESPONSE] {} {}, took {}ms, DoohyunHwang97".format(slowResponse.method, slowResponse.path, slowResponse.duration)
+            logger.info(logInfo)
+
+            httpHeaders.add("Authorization", "Bearer xoxb-5766809406786-6098325284464-Jzfs2DxOfD7DzCpccZhG6EfG")
+            httpHeaders.add("Content-Type", "application/json")
+
+            TODO("postForEntity 변수 문제")
+//            val slackResponse = restTemplate.postForEntity(URI("https://slack.com/api/chat.postMessage"), SlackRequest(text = logInfo, channel = "#spring-assignment-channel"), javaClass::SlackResponse)
+            true
+        }
     }
 }
+
+data class SlackRequest(val text: String, val channel: String)
+
+data class SlackResponse(val ok: Boolean)

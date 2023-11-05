@@ -17,3 +17,9 @@ spring:
 cache:
   ttl: 10s
   size: 100
+
+logging:
+  config: classpath:logback-spring.xml
+  level:
+    web: warn
+

@@ -29,6 +29,8 @@ dependencies {
     testImplementation("org.mockito.kotlin:mockito-kotlin:3.1.0")
     runtimeOnly("com.h2database:h2")
     implementation("com.github.ben-manes.caffeine:caffeine:3.0.3")
+    implementation("org.springframework.boot:spring-boot-starter-web")
+    implementation("com.github.maricn:logback-slack-appender:1.4.0")
 }
 
 tasks.withType<KotlinCompile> {

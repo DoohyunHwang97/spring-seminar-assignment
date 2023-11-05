@@ -5,6 +5,7 @@ import jakarta.servlet.http.HttpServletResponse
 import org.springframework.stereotype.Component
 import org.springframework.web.servlet.HandlerInterceptor
 import java.lang.Exception
+import java.time.Duration
 
 /**
  * 1. preHandle을 수정하여 logRequest
@@ -15,10 +16,12 @@ class LogInterceptor(
     private val logRequest: LogRequest,
     private val logSlowResponse: AlertSlowResponse,
 ) : HandlerInterceptor {
+    private val startTime = ThreadLocal<Long>()
 
     override fun preHandle(request: HttpServletRequest, response: HttpServletResponse, handler: Any): Boolean {
-        // FIXME
-        return super.preHandle(request, response, handler)
+        startTime.set(System.currentTimeMillis())
+        logRequest.invoke(Request(method = request.method, path = request.contextPath))
+        return true
     }
 
     override fun afterCompletion(
@@ -27,7 +30,10 @@ class LogInterceptor(
         handler: Any,
         ex: Exception?,
     ) {
-        // FIXME
-        super.afterCompletion(request, response, handler, ex)
+        val endTime = System.currentTimeMillis()
+        val processingTime = endTime - startTime.get()
+        if (processingTime >= 3000) {
+            logSlowResponse.invoke(SlowResponse(request.method, request.contextPath, processingTime))
+        }
     }
 }
