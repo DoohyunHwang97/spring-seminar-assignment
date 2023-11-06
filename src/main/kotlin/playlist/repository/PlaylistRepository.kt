@@ -14,7 +14,7 @@ interface PlaylistRepository : JpaRepository<PlaylistEntity, Long> {
     """)
     fun findByIdWithSongs(id: Long): PlaylistEntity?
 
-    @Modifying(clearAutomatically = true, flushAutomatically = true)
+    @Modifying
     @Query("UPDATE playlists p SET p.viewCnt = p.viewCnt + 1 WHERE p.id = :id")
     fun updateViewCnt(id: Long)
 }
