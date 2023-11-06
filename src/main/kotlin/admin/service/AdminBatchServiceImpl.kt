@@ -14,7 +14,7 @@ class AdminBatchServiceImpl(
         private val artistRepository: ArtistRepository,
         private val txManager: PlatformTransactionManager,
 ) : AdminBatchService {
-    private val threads = Executors.newFixedThreadPool(4)
+    private val threads = Executors.newFixedThreadPool(6)
 
     override fun insertAlbums(albumInfos: List<BatchAlbumInfo>) {
         albumInfos.forEach { albumInfo ->
