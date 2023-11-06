@@ -5,6 +5,7 @@ import org.springframework.stereotype.Service
 import java.util.concurrent.Executors
 import org.springframework.transaction.PlatformTransactionManager
 import org.springframework.transaction.support.TransactionTemplate
+import java.util.concurrent.Future
 
 @Service
 class AdminBatchServiceImpl(
@@ -13,11 +14,12 @@ class AdminBatchServiceImpl(
         private val artistRepository: ArtistRepository,
         private val txManager: PlatformTransactionManager,
 ) : AdminBatchService {
-    private val threads = Executors.newFixedThreadPool(6)
+    private val threads = Executors.newFixedThreadPool(4)
 
     override fun insertAlbums(albumInfos: List<BatchAlbumInfo>) {
-        albumInfos.forEach { albumInfo ->
-            val future = threads.submit {
+        val futures: List<Future<*>>  = ArrayList()
+        albumInfos.map { albumInfo ->
+            threads.submit {
                 TransactionTemplate(txManager).executeWithoutResult {
                     // 아티스트 유무 확인 후 생성
                     var artistEntity = artistRepository.findByName(albumInfo.artist)
@@ -94,6 +96,7 @@ class AdminBatchServiceImpl(
                     }
                 }
             }
+        }.forEach {future ->
             future.get()
         }
     }
