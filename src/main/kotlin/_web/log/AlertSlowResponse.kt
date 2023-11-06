@@ -1,8 +1,15 @@
 package com.wafflestudio.seminar.spring2023._web.log
 
+import org.json.simple.JSONObject
+import org.json.simple.parser.JSONParser
 import org.slf4j.LoggerFactory
+import org.springframework.http.HttpEntity
+import org.springframework.http.HttpHeaders
 import org.springframework.stereotype.Component
+import org.springframework.web.client.RestTemplate
+import java.util.concurrent.Executors
 import java.util.concurrent.Future
+
 
 interface AlertSlowResponse {
     operator fun invoke(slowResponse: SlowResponse): Future<Boolean>
@@ -29,8 +36,37 @@ data class SlowResponse(
 @Component
 class AlertSlowResponseImpl : AlertSlowResponse {
     private val logger = LoggerFactory.getLogger(javaClass)
+    private val threads = Executors.newFixedThreadPool(4)
+    private val restTemplate = RestTemplate()
+
 
     override operator fun invoke(slowResponse: SlowResponse): Future<Boolean> {
-        TODO()
+        return threads.submit<Boolean> {
+            val logInfo = String.format("[API-RESPONSE] %s %s, took %sms, DoohyunHwang97", slowResponse.method, slowResponse.path, slowResponse.duration)
+            logger.info(logInfo)
+
+            val url = "https://slack.com/api/chat.postMessage"
+
+            val httpHeaders = HttpHeaders()
+            httpHeaders.add("Authorization", "Bearer xoxb-5766809406786-6098325284464-zP8LXXRQtHaKHeirX3U1OkOd")
+            httpHeaders.add("Content-Type", "application/json")
+
+            val body = mapOf(
+                    "text" to logInfo,
+            "channel" to "#spring-assignment-channel"
+            )
+
+            val requestMessage: HttpEntity<*> = HttpEntity(body, httpHeaders)
+
+            val response: HttpEntity<String> = restTemplate.postForEntity(url, requestMessage, String::class.java)
+
+            val jsonParser = JSONParser()
+            val jsonObject = jsonParser.parse(response.body) as JSONObject
+            val ok = jsonObject.get("ok") as Boolean
+
+            ok
+        }
     }
 }
+
+data class SlackResponse(val ok: Boolean)

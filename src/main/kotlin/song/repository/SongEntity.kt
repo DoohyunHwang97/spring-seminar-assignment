@@ -12,14 +12,14 @@ import jakarta.persistence.OneToMany
 
 @Entity(name = "songs")
 class SongEntity(
-    @Id
+        @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     val id: Long = 0L,
-    val title: String,
-    val duration: Int,
-    @ManyToOne(fetch = FetchType.LAZY)
+        var title: String,
+        var duration: Int,
+        @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "album_id")
-    val album: AlbumEntity,
-    @OneToMany(mappedBy = "song", cascade = [CascadeType.ALL])
-    val artists: MutableList<SongArtistEntity> = mutableListOf(),
+        var album: AlbumEntity,
+        @OneToMany(mappedBy = "song", cascade = [CascadeType.ALL])
+        var artists: MutableList<SongArtistEntity> = mutableListOf(),
 )

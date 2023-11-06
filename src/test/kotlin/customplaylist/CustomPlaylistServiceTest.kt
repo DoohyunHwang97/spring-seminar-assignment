@@ -5,10 +5,13 @@ import com.wafflestudio.seminar.spring2023.customplaylist.service.CustomPlaylist
 import com.wafflestudio.seminar.spring2023.customplaylist.service.CustomPlaylistService
 import com.wafflestudio.seminar.spring2023.customplaylist.service.SongNotFoundException
 import org.assertj.core.api.Assertions.assertThat
+import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
+import org.springframework.transaction.PlatformTransactionManager
+import org.springframework.transaction.support.TransactionTemplate
 import java.util.concurrent.Executors
 
 /***
@@ -16,9 +19,14 @@ import java.util.concurrent.Executors
  */
 @SpringBootTest
 class CustomPlaylistServiceTest @Autowired constructor(
-    private val customPlaylistService: CustomPlaylistService,
-    private val customPlaylistRepository: CustomPlaylistRepository,
+        private val customPlaylistService: CustomPlaylistService,
+        private val customPlaylistRepository: CustomPlaylistRepository,
+        private val txManager: PlatformTransactionManager,
 ) {
+    @BeforeEach
+    fun truncate() {
+        customPlaylistRepository.deleteAll()
+    }
 
     @Test
     fun `커스텀 플레이리스트 생성시, 자동 생성되는 제목은 내 플레이리스트 #${유저의 커스텀 플레이리스트 갯수 + 1}`() {
@@ -53,24 +61,26 @@ class CustomPlaylistServiceTest @Autowired constructor(
 
     @Test
     fun `커스텀 플레이리스트에 곡 추가시, songCnt가 올라가고 연결 테이블의 row가 생성된다`() {
-        val created = customPlaylistService.create(userId = 1L)
+        TransactionTemplate(txManager).executeWithoutResult {
+            val created = customPlaylistService.create(userId = 1L)
 
-        customPlaylistService.addSong(
-            userId = 1L,
-            customPlaylistId = created.id,
-            songId = 1L
-        )
+            customPlaylistService.addSong(
+                    userId = 1L,
+                    customPlaylistId = created.id,
+                    songId = 1L
+            )
 
-        // songCnt 컬럼 체크
-        val customPlaylistEntity = customPlaylistRepository.findById(created.id).get()
+            // songCnt 컬럼 체크
+            val customPlaylistEntity = customPlaylistRepository.findById(created.id).get()
 
-        assertThat(customPlaylistEntity.songCnt).isEqualTo(1)
+            assertThat(customPlaylistEntity.songCnt).isEqualTo(1)
 
-        // customPlaylistSong 연결 테이블 체크
-        val customPlaylist = customPlaylistService.get(userId = 1L, customPlaylistId = created.id)
+            // customPlaylistSong 연결 테이블 체크
+            val customPlaylist = customPlaylistService.get(userId = 1L, customPlaylistId = created.id)
 
-        assertThat(customPlaylist.songs.size).isEqualTo(1)
-        assertThat(customPlaylist.songs.first().id).isEqualTo(1L)
+            assertThat(customPlaylist.songs.size).isEqualTo(1)
+            assertThat(customPlaylist.songs.first().id).isEqualTo(1L)
+        }
     }
 
     @Test
@@ -81,9 +91,9 @@ class CustomPlaylistServiceTest @Autowired constructor(
         val parallelJobs = (1L..10L).map { songId ->
             threads.submit {
                 customPlaylistService.addSong(
-                    userId = 1L,
-                    customPlaylistId = created.id,
-                    songId = songId
+                        userId = 1L,
+                        customPlaylistId = created.id,
+                        songId = songId
                 )
             }
         }

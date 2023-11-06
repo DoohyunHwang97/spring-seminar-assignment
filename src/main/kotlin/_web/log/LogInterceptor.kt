@@ -15,10 +15,12 @@ class LogInterceptor(
     private val logRequest: LogRequest,
     private val logSlowResponse: AlertSlowResponse,
 ) : HandlerInterceptor {
+    private val startTime = ThreadLocal<Long>()
 
     override fun preHandle(request: HttpServletRequest, response: HttpServletResponse, handler: Any): Boolean {
-        // FIXME
-        return super.preHandle(request, response, handler)
+        startTime.set(System.currentTimeMillis())
+        logRequest.invoke(Request(method = request.method, path = request.contextPath))
+        return true
     }
 
     override fun afterCompletion(
@@ -27,7 +29,10 @@ class LogInterceptor(
         handler: Any,
         ex: Exception?,
     ) {
-        // FIXME
-        super.afterCompletion(request, response, handler, ex)
+        val endTime = System.currentTimeMillis()
+        val processingTime = endTime - startTime.get()
+        if (processingTime >= 3000) {
+            logSlowResponse.invoke(SlowResponse(request.method, request.contextPath, processingTime))
+        }
     }
 }

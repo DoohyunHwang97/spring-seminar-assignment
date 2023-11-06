@@ -14,4 +14,5 @@ interface AlbumRepository : JpaRepository<AlbumEntity, Long> {
     fun findAllByTitleContainingWithJoinFetch(keyword: String): List<AlbumEntity>
 
     fun findByTitle(title: String): AlbumEntity?
+
 }
