@@ -5,7 +5,6 @@ import jakarta.servlet.http.HttpServletResponse
 import org.springframework.stereotype.Component
 import org.springframework.web.servlet.HandlerInterceptor
 import java.lang.Exception
-import java.time.Duration
 
 /**
  * 1. preHandle을 수정하여 logRequest

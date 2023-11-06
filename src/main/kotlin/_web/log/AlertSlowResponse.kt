@@ -1,6 +1,5 @@
 package com.wafflestudio.seminar.spring2023._web.log
 
-import com.fasterxml.jackson.databind.ObjectMapper
 import org.json.simple.JSONObject
 import org.json.simple.parser.JSONParser
 import org.slf4j.LoggerFactory

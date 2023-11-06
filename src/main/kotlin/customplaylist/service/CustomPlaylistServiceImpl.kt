@@ -6,11 +6,8 @@ import com.wafflestudio.seminar.spring2023.customplaylist.repository.CustomPlayl
 import com.wafflestudio.seminar.spring2023.song.repository.SongRepository
 import com.wafflestudio.seminar.spring2023.song.service.Song
 import jakarta.transaction.Transactional
-import org.springframework.orm.ObjectOptimisticLockingFailureException
 import org.springframework.stereotype.Service
 import org.springframework.transaction.PlatformTransactionManager
-import org.springframework.transaction.support.TransactionTemplate
-import kotlin.jvm.optionals.getOrElse
 
 /**
  * 스펙:

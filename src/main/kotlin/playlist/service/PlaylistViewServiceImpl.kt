@@ -4,14 +4,11 @@ import com.wafflestudio.seminar.spring2023.playlist.repository.PlaylistRepositor
 import com.wafflestudio.seminar.spring2023.playlist.repository.PlaylistViewEntity
 import com.wafflestudio.seminar.spring2023.playlist.repository.PlaylistViewRepository
 import com.wafflestudio.seminar.spring2023.playlist.service.SortPlaylist.Type
-import jakarta.transaction.Transactional
-import org.springframework.orm.ObjectOptimisticLockingFailureException
 import org.springframework.stereotype.Service
 import org.springframework.transaction.PlatformTransactionManager
 import org.springframework.transaction.support.TransactionTemplate
 import java.time.LocalDateTime
 import java.time.Duration
-import java.util.concurrent.CompletableFuture
 import java.util.concurrent.Future
 import java.util.concurrent.Executors
 
