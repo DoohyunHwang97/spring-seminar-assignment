@@ -42,7 +42,7 @@ class AlertSlowResponseImpl : AlertSlowResponse {
 
     override operator fun invoke(slowResponse: SlowResponse): Future<Boolean> {
         return threads.submit<Boolean> {
-            val logInfo = "[API-RESPONSE] {} {}, took {}ms, DoohyunHwang97".format(slowResponse.method, slowResponse.path, slowResponse.duration)
+            val logInfo = String.format("[API-RESPONSE] %s %s, took %sms, DoohyunHwang97", slowResponse.method, slowResponse.path, slowResponse.duration)
             logger.info(logInfo)
 
             val url = "https://slack.com/api/chat.postMessage"
