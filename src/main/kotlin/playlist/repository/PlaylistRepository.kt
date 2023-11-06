@@ -17,4 +17,8 @@ interface PlaylistRepository : JpaRepository<PlaylistEntity, Long> {
     @Modifying
     @Query("UPDATE playlists p SET p.viewCnt = p.viewCnt + 1 WHERE p.id = :id")
     fun updateViewCnt(id: Long)
+
+    @Lock(value = LockModeType.PESSIMISTIC_WRITE)
+    @Query("SELECT p FROM playlists p WHERE p.id = :id")
+    fun findByIdUsingLock(id: Long): PlaylistEntity?
 }

@@ -46,14 +46,16 @@ class PlaylistViewServiceImpl (
                     false
                 } else {
                     TransactionTemplate(txManager).executeWithoutResult {
-                        playlistRepository.updateViewCnt(playlistId)
+                        val playlist = playlistRepository.findByIdUsingLock(playlistId)
+                        playlist!!.viewCnt++
                     }
                     true
                 }
             } else {
                 TransactionTemplate(txManager).executeWithoutResult {
                     playlistViewRepository.save(PlaylistViewEntity(playlistId = playlistId, userId = userId, createdAt = at))
-                    playlistRepository.updateViewCnt(playlistId)
+                    val playlist = playlistRepository.findByIdUsingLock(playlistId)
+                    playlist!!.viewCnt++
                 }
                 true
             }
